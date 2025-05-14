@@ -1,0 +1,40 @@
+﻿<Page x:Class="TaxiDispatcher.Pages.Orders.OrdersPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Управление заказами">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Button Content="Добавить заказ" Click="AddOrder_Click" Margin="5"/>
+            <Button Content="Обновить" Click="RefreshOrders_Click" Margin="5"/>
+            <TextBox x:Name="SearchTextBox" Width="200" Margin="5"/>
+            <Button Content="Поиск" Click="SearchOrders_Click" Margin="5"/>
+        </StackPanel>
+
+        <DataGrid x:Name="OrdersGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                  CanUserAddRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding OrderID}" Width="Auto"/>
+                <DataGridTextColumn Header="Клиент" Binding="{Binding ClientName}" Width="*"/>
+                <DataGridTextColumn Header="Водитель" Binding="{Binding DriverName}" Width="*"/>
+                <DataGridTextColumn Header="Откуда" Binding="{Binding PickupAddress}" Width="*"/>
+                <DataGridTextColumn Header="Куда" Binding="{Binding DestinationAddress}" Width="*"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
+                <DataGridTextColumn Header="Цена" Binding="{Binding Price}" Width="80"/>
+                <DataGridTextColumn Header="Дата" Binding="{Binding OrderTime}" Width="120"/>
+                <DataGridTemplateColumn Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Изменить" Click="EditOrder_Click" 
+                                    Tag="{Binding OrderID}" Margin="2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -1,0 +1,43 @@
+﻿<Window x:Class="TaxiDispatcher.Pages.Drivers.DriverForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Данные водителя" Height="300" Width="400"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Имя:" Grid.Row="0"/>
+            <TextBox x:Name="FirstNameBox" Grid.Row="1" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Фамилия:" Grid.Row="2"/>
+            <TextBox x:Name="LastNameBox" Grid.Row="3" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Телефон:" Grid.Row="4"/>
+            <TextBox x:Name="PhoneBox" Grid.Row="5" Margin="0,0,0,10" 
+                 PreviewTextInput="PhoneBox_PreviewTextInput"/>
+
+            <TextBlock Text="Номер водительского удостоверения:" Grid.Row="6"/>
+            <TextBox x:Name="LicenseBox" Grid.Row="7" Margin="0,0,0,10"/>
+
+            <StackPanel Grid.Row="9" Orientation="Horizontal">
+                <StackPanel Grid.Row="9" Margin="0,0,10,10" Orientation="Vertical">
+                    <TextBlock Text="Модель автомобиля:" Grid.Row="8"/>
+                    <TextBox x:Name="CarModelBox" Width="200"/>
+                </StackPanel>
+                <StackPanel Grid.Row="9" Margin="0,0,0,10" Orientation="Vertical">
+                    <TextBlock Text="Номер автомобиля:" Grid.Row="8"/>
+                    <TextBox x:Name="CarNumberBox" Width="120"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Сохранить" Click="Save_Click" Width="100" Margin="0,0,10,0"/>
+            <Button Content="Отмена" Click="Cancel_Click" Width="100"/>
+        </StackPanel>
+    </Grid>
+</Window>

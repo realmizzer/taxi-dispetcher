@@ -1,0 +1,40 @@
+﻿<Window x:Class="TaxiDispatcher.Pages.Orders.OrderForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Форма заказа" Height="350" Width="400"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Клиент:" Grid.Row="0"/>
+            <ComboBox x:Name="ClientComboBox" DisplayMemberPath="FullName" 
+                 SelectedValuePath="ClientID" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Водитель:"/>
+            <ComboBox x:Name="DriverComboBox" DisplayMemberPath="FullName" 
+                 SelectedValuePath="DriverID" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Адрес подачи:"/>
+            <TextBox x:Name="PickupTextBox" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Адрес назначения:"/>
+            <TextBox x:Name="DestinationTextBox" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Способ оплаты:"/>
+            <ComboBox x:Name="PaymentMethodComboBox" Margin="0,0,0,20">
+                <ComboBoxItem Content="Наличные"/>
+                <ComboBoxItem Content="Карта"/>
+                <ComboBoxItem Content="Мобильный платеж"/>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Сохранить" Click="Save_Click" Width="100" Margin="0,0,10,0"/>
+            <Button Content="Отмена" Click="Cancel_Click" Width="100"/>
+        </StackPanel>
+    </Grid>
+</Window>

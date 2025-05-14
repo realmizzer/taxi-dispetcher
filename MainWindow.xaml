@@ -1,0 +1,21 @@
+﻿<Window x:Class="TaxiDispatcher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Такси-диспетчер" Height="600" Width="900">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Заказы">
+                <Frame x:Name="OrdersFrame" NavigationUIVisibility="Hidden"/>
+            </TabItem>
+            <TabItem Header="Водители">
+                <Frame x:Name="DriversFrame" NavigationUIVisibility="Hidden"/>
+            </TabItem>
+            <TabItem Header="Клиенты">
+                <Frame x:Name="ClientsFrame" NavigationUIVisibility="Hidden"/>
+            </TabItem>
+            <TabItem Header="Отчеты">
+                <Frame x:Name="ReportsFrame" NavigationUIVisibility="Hidden"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
