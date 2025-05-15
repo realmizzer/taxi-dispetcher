@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace taxi_dispetcher
+namespace TaxiDispatcher
 {
     public partial class App : Application
     {
