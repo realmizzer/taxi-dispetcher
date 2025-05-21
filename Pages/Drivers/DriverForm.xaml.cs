@@ -106,7 +106,7 @@ namespace TaxiDispatcher.Pages.Drivers
                     Status = selectedItem.Tag.ToString();
                 }
 
-                    string query;
+                string query;
                 MySqlParameter[] parameters;
 
                 if (isEditMode)

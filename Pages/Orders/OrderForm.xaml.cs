@@ -72,18 +72,8 @@ namespace TaxiDispatcher.Pages.Orders
                     }
                 }
 
-                if (row["PaymentMethod"] != DBNull.Value)
-                {
-                    for (int i = 0; i < PaymentMethodComboBox.Items.Count; i++)
-                    {
-                        var item = (ComboBoxItem)PaymentMethodComboBox.Items[i];
-                        if (item.Content.ToString() == row["PaymentMethod"].ToString())
-                        {
-                            PaymentMethodComboBox.SelectedIndex = i;
-                            break;
-                        }
-                    }
-                }
+                PaymentMethodComboBox.SelectedValue = row["PaymentMethod"].ToString();
+                StatusComboBox.SelectedValue = row["Status"].ToString();
             }
         }
 
@@ -107,17 +97,17 @@ namespace TaxiDispatcher.Pages.Orders
                 int clientId = Convert.ToInt32(ClientComboBox.SelectedValue);
                 int? driverId = DriverComboBox.SelectedValue != null ?
                     Convert.ToInt32(DriverComboBox.SelectedValue) : (int?)null;
-
                 string paymentMethod = null;
-                if (PaymentMethodComboBox.SelectedItem != null)
+                string status = null;
+
+                if (PaymentMethodComboBox.SelectedItem is ComboBoxItem paymentMethodItem)
                 {
-                    paymentMethod = ((ComboBoxItem)PaymentMethodComboBox.SelectedItem).Content.ToString() switch
-                    {
-                        "Наличные" => "Cash",
-                        "Карта" => "Card",
-                        "Мобильный платеж" => "MobilePay",
-                        _ => null
-                    };
+                    paymentMethod = paymentMethodItem.Tag.ToString();
+                }
+
+                if (StatusComboBox.SelectedItem is ComboBoxItem statusItem)
+                {
+                    status = statusItem.Tag.ToString();
                 }
 
                 string query;
@@ -126,12 +116,13 @@ namespace TaxiDispatcher.Pages.Orders
                 if (isEditMode)
                 {
                     query = @"UPDATE Orders SET 
-                    ClientID = @clientId,
-                    DriverID = @driverId,
-                    PickupAddress = @pickup,
-                    DestinationAddress = @destination,
-                    PaymentMethod = @paymentMethod
-                    WHERE OrderID = @orderId";
+                                            ClientID = @clientId,
+                                            DriverID = @driverId,
+                                            PickupAddress = @pickup,
+                                            DestinationAddress = @destination,
+                                            PaymentMethod = @paymentMethod,
+                                            Status = @status
+                                            WHERE OrderID = @orderId";
 
                     parameters = new MySqlParameter[]
                     {
@@ -140,6 +131,7 @@ namespace TaxiDispatcher.Pages.Orders
                         new MySqlParameter("@pickup", PickupTextBox.Text),
                         new MySqlParameter("@destination", DestinationTextBox.Text),
                         new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
+                        new MySqlParameter("@status", status ?? (object)DBNull.Value),
                         new MySqlParameter("@orderId", orderId)
                     };
                 }
@@ -147,7 +139,7 @@ namespace TaxiDispatcher.Pages.Orders
                 {
                     query = @"INSERT INTO Orders 
                     (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status) 
-                    VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, 'Pending')";
+                    VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status)";
 
                     parameters = new MySqlParameter[]
                     {
@@ -155,8 +147,9 @@ namespace TaxiDispatcher.Pages.Orders
                         new MySqlParameter("@driverId", driverId ?? (object)DBNull.Value),
                         new MySqlParameter("@pickup", PickupTextBox.Text),
                         new MySqlParameter("@destination", DestinationTextBox.Text),
-                        new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value)
-                    };
+                        new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
+                        new MySqlParameter("@status", status ?? (object)DBNull.Value)
+                    };;
                 }
 
                 int affectedRows = db.ExecuteNonQuery(query, parameters);
@@ -164,17 +157,14 @@ namespace TaxiDispatcher.Pages.Orders
                 {
                     if (driverId.HasValue)
                     {
-                        string updateDriverQuery = "UPDATE Drivers SET Status = 'OnRide' WHERE DriverID = @driverId";
+                        var driverStatus = (status == "Completed" || status == "Cancelled") ? "Available" : "Busy";
+                        string updateDriverQuery = $"UPDATE Drivers SET Status = '{driverStatus}' WHERE DriverID = @driverId";
                         db.ExecuteNonQuery(updateDriverQuery, new[] { new MySqlParameter("@driverId", driverId.Value) });
                     }
 
                     DialogResult = true;
                     Close();
                 }
-            }
-            catch (MySqlException ex) when (ex.Number == 1265)
-            {
-                MessageBox.Show("Некорректное значение способа оплаты. Выберите из списка.");
             }
             catch (Exception ex)
             {
