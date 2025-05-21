@@ -11,6 +11,7 @@ namespace TaxiDispatcher.Pages.Orders
         private readonly bool isEditMode;
         private readonly int orderId;
         private readonly DatabaseHelper db = new DatabaseHelper();
+        private int? currentDriverId = null;
 
         public OrderForm()
         {
@@ -35,7 +36,10 @@ namespace TaxiDispatcher.Pages.Orders
 
         private void LoadDrivers()
         {
-            string query = "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName FROM Drivers WHERE Status = 'Available'";
+            string query = isEditMode
+                ? "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName FROM Drivers"
+                : "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName FROM Drivers WHERE Status = 'Available'";
+
             DriverComboBox.ItemsSource = db.ExecuteQuery(query).DefaultView;
         }
 
@@ -51,6 +55,7 @@ namespace TaxiDispatcher.Pages.Orders
                 PickupTextBox.Text = row["PickupAddress"].ToString();
                 DestinationTextBox.Text = row["DestinationAddress"].ToString();
 
+                // Загрузка клиента
                 foreach (DataRowView item in ClientComboBox.Items)
                 {
                     if (Convert.ToInt32(item["ClientID"]) == Convert.ToInt32(row["ClientID"]))
@@ -60,20 +65,73 @@ namespace TaxiDispatcher.Pages.Orders
                     }
                 }
 
+                // Загрузка водителя
                 if (row["DriverID"] != DBNull.Value)
                 {
-                    foreach (DataRowView item in DriverComboBox.Items)
+                    currentDriverId = Convert.ToInt32(row["DriverID"]);
+                    string driverQuery = "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName FROM Drivers WHERE DriverID = @driverId";
+                    var driverData = db.ExecuteQuery(driverQuery, new[] { new MySqlParameter("@driverId", currentDriverId) });
+
+                    if (driverData.Rows.Count > 0)
                     {
-                        if (Convert.ToInt32(item["DriverID"]) == Convert.ToInt32(row["DriverID"]))
+                        // Сохраняем текущий источник данных
+                        var currentSource = DriverComboBox.ItemsSource as DataView;
+                        var combinedTable = currentSource?.Table?.Clone() ?? driverData.Clone();
+
+                        // Добавляем текущего водителя
+                        combinedTable.ImportRow(driverData.Rows[0]);
+
+                        // Добавляем остальных водителей
+                        if (currentSource != null)
                         {
-                            DriverComboBox.SelectedItem = item;
+                            foreach (DataRowView drv in currentSource)
+                            {
+                                if (Convert.ToInt32(drv["DriverID"]) != currentDriverId)
+                                {
+                                    combinedTable.ImportRow(drv.Row);
+                                }
+                            }
+                        }
+
+                        DriverComboBox.ItemsSource = combinedTable.DefaultView;
+
+                        // Выбираем текущего водителя
+                        foreach (DataRowView item in DriverComboBox.Items)
+                        {
+                            if (Convert.ToInt32(item["DriverID"]) == currentDriverId)
+                            {
+                                DriverComboBox.SelectedItem = item;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Загрузка способа оплаты
+                if (row["PaymentMethod"] != DBNull.Value)
+                {
+                    foreach (ComboBoxItem item in PaymentMethodComboBox.Items)
+                    {
+                        if (item.Tag.ToString() == row["PaymentMethod"].ToString())
+                        {
+                            PaymentMethodComboBox.SelectedItem = item;
                             break;
                         }
                     }
                 }
 
-                PaymentMethodComboBox.SelectedValue = row["PaymentMethod"].ToString();
-                StatusComboBox.SelectedValue = row["Status"].ToString();
+                // Загрузка статуса
+                if (row["Status"] != DBNull.Value)
+                {
+                    foreach (ComboBoxItem item in StatusComboBox.Items)
+                    {
+                        if (item.Tag.ToString() == row["Status"].ToString())
+                        {
+                            StatusComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -95,20 +153,11 @@ namespace TaxiDispatcher.Pages.Orders
             try
             {
                 int clientId = Convert.ToInt32(ClientComboBox.SelectedValue);
-                int? driverId = DriverComboBox.SelectedValue != null ?
+                int? newDriverId = DriverComboBox.SelectedValue != null ?
                     Convert.ToInt32(DriverComboBox.SelectedValue) : (int?)null;
-                string paymentMethod = null;
-                string status = null;
 
-                if (PaymentMethodComboBox.SelectedItem is ComboBoxItem paymentMethodItem)
-                {
-                    paymentMethod = paymentMethodItem.Tag.ToString();
-                }
-
-                if (StatusComboBox.SelectedItem is ComboBoxItem statusItem)
-                {
-                    status = statusItem.Tag.ToString();
-                }
+                string paymentMethod = (PaymentMethodComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+                string status = (StatusComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
 
                 string query;
                 MySqlParameter[] parameters;
@@ -116,50 +165,68 @@ namespace TaxiDispatcher.Pages.Orders
                 if (isEditMode)
                 {
                     query = @"UPDATE Orders SET 
-                                            ClientID = @clientId,
-                                            DriverID = @driverId,
-                                            PickupAddress = @pickup,
-                                            DestinationAddress = @destination,
-                                            PaymentMethod = @paymentMethod,
-                                            Status = @status
-                                            WHERE OrderID = @orderId";
+                            ClientID = @clientId,
+                            DriverID = @driverId,
+                            PickupAddress = @pickup,
+                            DestinationAddress = @destination,
+                            PaymentMethod = @paymentMethod,
+                            Status = @status
+                            WHERE OrderID = @orderId";
 
                     parameters = new MySqlParameter[]
                     {
                         new MySqlParameter("@clientId", clientId),
-                        new MySqlParameter("@driverId", driverId ?? (object)DBNull.Value),
+                        new MySqlParameter("@driverId", newDriverId ?? (object)DBNull.Value),
                         new MySqlParameter("@pickup", PickupTextBox.Text),
                         new MySqlParameter("@destination", DestinationTextBox.Text),
                         new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
                         new MySqlParameter("@status", status ?? (object)DBNull.Value),
                         new MySqlParameter("@orderId", orderId)
                     };
+
+                    // Обновляем статусы водителей
+                    if (currentDriverId.HasValue && currentDriverId != newDriverId)
+                    {
+                        // Освобождаем предыдущего водителя
+                        db.ExecuteNonQuery(
+                            "UPDATE Drivers SET Status = 'Available' WHERE DriverID = @driverId",
+                            new[] { new MySqlParameter("@driverId", currentDriverId.Value) } );
+                    }
                 }
                 else
                 {
                     query = @"INSERT INTO Orders 
-                    (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status) 
-                    VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status)";
+                            (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status) 
+                            VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status)";
 
                     parameters = new MySqlParameter[]
                     {
                         new MySqlParameter("@clientId", clientId),
-                        new MySqlParameter("@driverId", driverId ?? (object)DBNull.Value),
+                        new MySqlParameter("@driverId", newDriverId ?? (object)DBNull.Value),
                         new MySqlParameter("@pickup", PickupTextBox.Text),
                         new MySqlParameter("@destination", DestinationTextBox.Text),
                         new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
                         new MySqlParameter("@status", status ?? (object)DBNull.Value)
-                    };;
+                    };
                 }
 
                 int affectedRows = db.ExecuteNonQuery(query, parameters);
                 if (affectedRows > 0)
                 {
-                    if (driverId.HasValue)
+                    // Обновляем статус нового водителя
+                    if (newDriverId.HasValue)
                     {
-                        var driverStatus = (status == "Completed" || status == "Cancelled") ? "Available" : "Busy";
-                        string updateDriverQuery = $"UPDATE Drivers SET Status = '{driverStatus}' WHERE DriverID = @driverId";
-                        db.ExecuteNonQuery(updateDriverQuery, new[] { new MySqlParameter("@driverId", driverId.Value) });
+                        string driverStatus = status == "Completed" || status == "Cancelled"
+                            ? "Available"
+                            : "Busy";
+
+                        db.ExecuteNonQuery(
+                            "UPDATE Drivers SET Status = @status WHERE DriverID = @driverId",
+                            new[]
+                            {
+                                new MySqlParameter("@status", driverStatus),
+                                new MySqlParameter("@driverId", newDriverId.Value)
+                            });
                     }
 
                     DialogResult = true;
