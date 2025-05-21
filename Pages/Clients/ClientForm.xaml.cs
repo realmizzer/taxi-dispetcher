@@ -11,21 +11,34 @@ namespace TaxiDispatcher.Pages.Client
         public ClientForm()
         {
             InitializeComponent();
+            DataContext = this;
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(FirstNameBox.Text) ||
-                string.IsNullOrWhiteSpace(LastNameBox.Text) ||
-                string.IsNullOrWhiteSpace(PhoneBox.Text))
+            var firstName = FirstNameBox.Text;
+            var lastName = LastNameBox.Text;
+            var phone = PhoneBox.Text;
+            var phoneWithoutMask = GetPhoneNumberWithoutMask(phone);
+
+            if (string.IsNullOrWhiteSpace(firstName) ||
+                string.IsNullOrWhiteSpace(lastName) ||
+                string.IsNullOrWhiteSpace(phone))
             {
                 MessageBox.Show("Все поля обязательны для заполнения");
                 return;
             }
 
-            FirstName = FirstNameBox.Text;
-            LastName = LastNameBox.Text;
-            Phone = PhoneBox.Text;
+            if (phoneWithoutMask.Length < 11)
+            {
+                MessageBox.Show("Телефон должен состоять из 11 цифр");
+                return;
+            }
+           
+
+            FirstName = firstName;
+            LastName = lastName;
+            Phone = phoneWithoutMask;
 
             DialogResult = true;
             Close();
@@ -35,6 +48,11 @@ namespace TaxiDispatcher.Pages.Client
         {
             DialogResult = false;
             Close();
+        }
+
+        private string GetPhoneNumberWithoutMask(string phoneNumber)
+        {
+            return new string(phoneNumber.Where(char.IsDigit).ToArray());
         }
     }
 }
