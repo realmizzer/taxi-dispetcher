@@ -19,6 +19,7 @@
             <TextBox x:Name="SearchTextBox" Width="200" Margin="5"/>
             <Button Content="Поиск" Click="SearchDrivers_Click" Margin="5"/>
             <ComboBox x:Name="StatusComboBox" Margin="5" Width="120">
+                <ComboBoxItem Tag="All" Content="Все" IsSelected="True"/>
                 <ComboBoxItem Tag="Available" Content="Доступен"/>
                 <ComboBoxItem Tag="Busy" Content="Занят"/>
                 <ComboBoxItem Tag="Offline" Content="Оффлайн"/>

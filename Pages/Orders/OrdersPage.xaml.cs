@@ -77,7 +77,7 @@ namespace TaxiDispatcher.Pages.Orders
         {
             try
             {
-                string searchText = SearchTextBox.Text;
+                string searchText = SearchTextBox.Text.Trim();
                 if (string.IsNullOrWhiteSpace(searchText))
                 {
                     LoadOrders();
@@ -99,8 +99,10 @@ namespace TaxiDispatcher.Pages.Orders
                                OR c.LastName LIKE @search
                                OR d.FirstName LIKE @search
                                OR d.LastName LIKE @search
+                               OR o.OrderID LIKE @search
                                OR o.PickupAddress LIKE @search
                                OR o.DestinationAddress LIKE @search
+                               OR o.OrderTime LIKE @search
                                ORDER BY o.OrderTime DESC";
 
                 var parameter = new MySqlParameter("@search", $"%{searchText}%");

@@ -60,27 +60,36 @@ namespace TaxiDispatcher.Pages.Drivers
 
         private void SearchDrivers_Click(object sender, RoutedEventArgs e)
         {
-            string searchText = SearchTextBox.Text;
-            string statusFilter = ((ComboBoxItem)StatusComboBox.SelectedItem).Content.ToString();
+            string searchText = SearchTextBox.Text.Trim();
+            string statusTag = ((ComboBoxItem)StatusComboBox.SelectedItem).Tag.ToString();
 
-            string query = "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName, " +
-                          "Phone, CONCAT(CarModel, ' (', CarNumber, ')') as CarInfo, " +
-                          "Status, Rating FROM Drivers WHERE " +
-                          "(FirstName LIKE @search OR LastName LIKE @search OR Phone LIKE @search)";
+            string query = @"SELECT 
+                                DriverID,
+                                CONCAT(FirstName, ' ', LastName) as FullName,
+                                Phone,
+                                CONCAT(CarModel, ' (', CarNumber, ')') as CarInfo,
+                                Status,
+                                Rating
+                                FROM Drivers
+                                WHERE (
+                                DriverID LIKE @search
+                                OR FirstName LIKE @search
+                                OR LastName LIKE @search
+                                OR Phone LIKE @search)";
 
-            if (statusFilter != "Все")
+            if (statusTag != "All")
             {
                 query += " AND Status = @status";
             }
 
             var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@search", $"%{searchText}%")
-        };
-
-            if (statusFilter != "Все")
             {
-                parameters.Add(new MySqlParameter("@status", statusFilter));
+                new MySqlParameter("@search", $"%{searchText}%")
+            };
+
+            if (statusTag != "All")
+            {
+                parameters.Add(new MySqlParameter("@status", statusTag));
             }
 
             DriversGrid.ItemsSource = db.ExecuteQuery(query, parameters.ToArray()).DefaultView;
