@@ -95,31 +95,48 @@ namespace TaxiDispatcher.Pages.Reports
         private string GetFinancialReportQuery()
         {
             return @"SELECT 
-                    DATE_FORMAT(o.OrderTime, '%d.%m.%Y') as 'Дата',
+                    DATE_FORMAT(MAX(o.OrderTime), '%d.%m.%Y') as 'Дата',
                     COUNT(o.OrderID) as 'Кол-во заказов',
                     SUM(o.Price) as 'Общий доход',
                     AVG(o.Price) as 'Средний заказ',
-                    o.PaymentMethod as 'Способ оплаты'
-                FROM Orders o
-                WHERE o.OrderTime BETWEEN @startDate AND @endDate
-                GROUP BY DATE(o.OrderTime), o.PaymentMethod
-                ORDER BY DATE(o.OrderTime) DESC";
+                    MAX(o.PaymentMethod) as 'Способ оплаты',
+                    'Completed' as 'Статус'
+                    FROM Orders o
+                    WHERE o.OrderTime BETWEEN @startDate AND @endDate
+                    AND o.Status = 'Completed'
+                    GROUP BY DATE(o.OrderTime), o.PaymentMethod
+                    ORDER BY DATE(o.OrderTime) DESC";
         }
 
         private void ExportToPdf_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // Регистрируем стандартные шрифты с поддержкой кириллицы
+                string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "arial.ttf");
+                BaseFont baseFont = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                Font font = new Font(baseFont, 10);
+                Font boldFont = new Font(baseFont, 10, Font.BOLD);
+
                 if (ReportDataGrid.ItemsSource == null || ReportDataGrid.Items.Count == 0)
                 {
                     MessageBox.Show("Нет данных для экспорта");
                     return;
                 }
 
+                // Формируем заголовок в зависимости от типа отчета
+                string reportType = ((ComboBoxItem)ReportTypeCombo.SelectedItem).Content.ToString();
+                string title = reportType switch
+                {
+                    "Отчет по заказам" => "ОТЧЕТ ПО ЗАКАЗАМ",
+                    "Отчет по водителям" => "ОТЧЕТ ПО ВОДИТЕЛЯМ",
+                    "Финансовый отчет" => "ФИНАНСОВЫЙ ОТЧЕТ",
+                    _ => "ОТЧЕТ"
+                };
                 var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "PDF files (*.pdf)|*.pdf",
-                    FileName = $"Отчет_{DateTime.Now:yyyyMMddHHmmss}.pdf"
+                    FileName = $"{title}_{DateTime.Now:yyyyMMddHHmmss}.pdf"
                 };
 
                 if (saveDialog.ShowDialog() == true)
@@ -132,28 +149,27 @@ namespace TaxiDispatcher.Pages.Reports
                         document.Open();
 
                         // Заголовок отчета
-                        string reportType = ((ComboBoxItem)ReportTypeCombo.SelectedItem).Content.ToString();
-                        DateTime startDate = StartDatePicker.SelectedDate ?? DateTime.Today.AddDays(-7);
-                        DateTime endDate = EndDatePicker.SelectedDate ?? DateTime.Today;
+                        document.Add(new Paragraph(title, boldFont)
+                        {
+                            Alignment = Element.ALIGN_CENTER
+                        });
 
-                        document.Add(new Paragraph($"Отчет: {reportType}") { Alignment = Element.ALIGN_CENTER });
-                        document.Add(new Paragraph($"Период: {startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}"));
-                        document.Add(Chunk.NEWLINE);
-
-                        // Создаем таблицу
+                        // Добавляем таблицу
                         PdfPTable table = new PdfPTable(ReportDataGrid.Columns.Count);
                         table.WidthPercentage = 100;
 
-                        // Добавляем заголовки
+                        // Заголовки столбцов
                         foreach (DataGridColumn column in ReportDataGrid.Columns)
                         {
                             if (column.Header != null)
                             {
-                                table.AddCell(new Phrase(column.Header.ToString()));
+                                PdfPCell cell = new PdfPCell(new Phrase(column.Header.ToString(), boldFont));
+                                cell.BackgroundColor = new BaseColor(240, 240, 240);
+                                table.AddCell(cell);
                             }
                         }
 
-                        // Добавляем данные
+                        // Данные таблицы
                         foreach (var item in ReportDataGrid.Items)
                         {
                             if (item is DataRowView row)
@@ -167,7 +183,12 @@ namespace TaxiDispatcher.Pages.Reports
                                         if (binding != null)
                                         {
                                             string propertyName = binding.Path.Path;
-                                            table.AddCell(new Phrase(row[propertyName].ToString()));
+                                            object value = row[propertyName];
+                                            string textValue = (value == DBNull.Value || value == null)
+                                                ? string.Empty
+                                                : value.ToString();
+
+                                            table.AddCell(new Phrase(textValue, font));
                                         }
                                     }
                                 }
