@@ -28,7 +28,7 @@ namespace TaxiDispatcher.Pages.Drivers
         {
             LoadDrivers();
             SearchTextBox.Clear();
-            StatusFilterCombo.SelectedIndex = 0;
+            StatusComboBox.SelectedIndex = 0;
         }
 
         private void AddDriver_Click(object sender, RoutedEventArgs e)
@@ -61,7 +61,7 @@ namespace TaxiDispatcher.Pages.Drivers
         private void SearchDrivers_Click(object sender, RoutedEventArgs e)
         {
             string searchText = SearchTextBox.Text;
-            string statusFilter = ((ComboBoxItem)StatusFilterCombo.SelectedItem).Content.ToString();
+            string statusFilter = ((ComboBoxItem)StatusComboBox.SelectedItem).Content.ToString();
 
             string query = "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName, " +
                           "Phone, CONCAT(CarModel, ' (', CarNumber, ')') as CarInfo, " +

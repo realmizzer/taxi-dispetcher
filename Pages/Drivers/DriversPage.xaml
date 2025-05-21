@@ -18,11 +18,10 @@
             <Button Content="Обновить" Click="RefreshDrivers_Click" Margin="5"/>
             <TextBox x:Name="SearchTextBox" Width="200" Margin="5"/>
             <Button Content="Поиск" Click="SearchDrivers_Click" Margin="5"/>
-            <ComboBox x:Name="StatusFilterCombo" Margin="5" Width="120">
-                <ComboBoxItem Content="Все"/>
-                <ComboBoxItem Content="Доступен"/>
-                <ComboBoxItem Content="В поездке"/>
-                <ComboBoxItem Content="Оффлайн"/>
+            <ComboBox x:Name="StatusComboBox" Margin="5" Width="120">
+                <ComboBoxItem Tag="Available" Content="Доступен"/>
+                <ComboBoxItem Tag="Busy" Content="Занят"/>
+                <ComboBoxItem Tag="Offline" Content="Оффлайн"/>
             </ComboBox>
         </StackPanel>
         

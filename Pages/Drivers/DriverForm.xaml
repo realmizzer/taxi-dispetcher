@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:s="clr-namespace:System;assembly=mscorlib"
-        Title="Данные водителя" Height="300" Width="400"
+        Title="Данные водителя" Height="350" Width="400"
         WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
@@ -29,7 +29,6 @@
             <xctk:MaskedTextBox
                 x:Name="PhoneBox"
                 Mask="+7 (000) 000-00-00"
-                PromptChar=" "
                 ValueDataType="{x:Type s:String}"
                 Margin="0,0,0,10"/>
 
@@ -46,12 +45,18 @@
                     <xctk:MaskedTextBox 
                         x:Name="CarNumberBox"
                         Mask="L000LL000"
-                        Watermark="А999БВ77"
-                        PromptChar=" "
+                        Watermark="А993БВ52"
                         ValueDataType="{x:Type s:String}"
                         Width="120"/>
                 </StackPanel>
             </StackPanel>
+
+            <TextBlock Text="Статус:"/>
+            <ComboBox x:Name="StatusComboBox" SelectedValuePath="Tag" >
+                <ComboBoxItem Tag="Available" Content="Доступен" IsSelected="True"/>
+                <ComboBoxItem Tag="Busy" Content="Занят"/>
+                <ComboBoxItem Tag="Offline" Content="Оффлайн"/>
+            </ComboBox>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">

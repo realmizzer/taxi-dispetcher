@@ -2,6 +2,7 @@
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using TaxiDispatcher.Utils;
 
@@ -15,6 +16,7 @@ namespace TaxiDispatcher.Pages.Drivers
         public string LicenseNumber { get; private set; }
         public string CarModel { get; private set; }
         public string CarNumber { get; private set; }
+        public string Status { get; private set; }
 
         private readonly bool isEditMode;
         private readonly int driverId;
@@ -47,12 +49,14 @@ namespace TaxiDispatcher.Pages.Drivers
                 if (dataTable.Rows.Count > 0)
                 {
                     DataRow row = dataTable.Rows[0];
+                    Console.WriteLine(row["Status"]);
                     FirstNameBox.Text = row["FirstName"].ToString();
                     LastNameBox.Text = row["LastName"].ToString();
-                    PhoneBox.Text = row["Phone"].ToString();
+                    PhoneBox.Text = (string)phoneNumberConverter.Convert(row["Phone"].ToString());
                     LicenseBox.Text = row["LicenseNumber"].ToString();
                     CarModelBox.Text = row["CarModel"].ToString();
                     CarNumberBox.Text = row["CarNumber"].ToString();
+                    StatusComboBox.SelectedValue = row["Status"].ToString();
                 }
             }
             catch (Exception ex)
@@ -97,7 +101,12 @@ namespace TaxiDispatcher.Pages.Drivers
                 CarModel = CarModelBox.Text;
                 CarNumber = CarNumberBox.Text;
 
-                string query;
+                if (StatusComboBox.SelectedItem is ComboBoxItem selectedItem)
+                {
+                    Status = selectedItem.Tag.ToString();
+                }
+
+                    string query;
                 MySqlParameter[] parameters;
 
                 if (isEditMode)
@@ -108,7 +117,8 @@ namespace TaxiDispatcher.Pages.Drivers
                             Phone = @phone,
                             LicenseNumber = @license,
                             CarModel = @carModel,
-                            CarNumber = @carNumber
+                            CarNumber = @carNumber,
+                            Status = @status
                             WHERE DriverID = @id";
 
                     parameters = new MySqlParameter[]
@@ -119,6 +129,7 @@ namespace TaxiDispatcher.Pages.Drivers
                         new MySqlParameter("@license", LicenseNumber),
                         new MySqlParameter("@carModel", CarModel),
                         new MySqlParameter("@carNumber", CarNumber),
+                        new MySqlParameter("@status", Status),
                         new MySqlParameter("@id", driverId)
                     };
                 }
@@ -126,7 +137,7 @@ namespace TaxiDispatcher.Pages.Drivers
                 {
                     query = @"INSERT INTO Drivers 
                             (FirstName, LastName, Phone, LicenseNumber, CarModel, CarNumber, Status) 
-                            VALUES (@firstName, @lastName, @phone, @license, @carModel, @carNumber, 'Available')";
+                            VALUES (@firstName, @lastName, @phone, @license, @carModel, @carNumber, @status)";
 
                     parameters = new MySqlParameter[]
                     {
@@ -135,7 +146,8 @@ namespace TaxiDispatcher.Pages.Drivers
                         new MySqlParameter("@phone", Phone),
                         new MySqlParameter("@license", LicenseNumber),
                         new MySqlParameter("@carModel", CarModel),
-                        new MySqlParameter("@carNumber", CarNumber)
+                        new MySqlParameter("@carNumber", CarNumber),
+                        new MySqlParameter("@status", Status)
                     };
                 }
 
