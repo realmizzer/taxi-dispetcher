@@ -24,5 +24,11 @@ namespace TaxiDispatcher.Utils
             if (value == null) return string.Empty;
             return new string(value.ToString().Where(char.IsDigit).ToArray());
         }
+
+        public object ConvertBack(object value)
+        {
+            if (value == null) return string.Empty;
+            return new string(value.ToString().Where(char.IsDigit).ToArray());
+        }
     }
 }

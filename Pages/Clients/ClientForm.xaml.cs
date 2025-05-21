@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using TaxiDispatcher.Utils;
 
 namespace TaxiDispatcher.Pages.Client
 {
@@ -7,6 +8,8 @@ namespace TaxiDispatcher.Pages.Client
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
         public string Phone { get; private set; }
+
+        private readonly PhoneNumberConverter phoneNumberConverter = new PhoneNumberConverter();
 
         public ClientForm()
         {
@@ -19,7 +22,7 @@ namespace TaxiDispatcher.Pages.Client
             var firstName = FirstNameBox.Text;
             var lastName = LastNameBox.Text;
             var phone = PhoneBox.Text;
-            var phoneWithoutMask = GetPhoneNumberWithoutMask(phone);
+            var phoneWithoutMask = (string)phoneNumberConverter.ConvertBack(phone);
 
             if (string.IsNullOrWhiteSpace(firstName) ||
                 string.IsNullOrWhiteSpace(lastName) ||
@@ -48,11 +51,6 @@ namespace TaxiDispatcher.Pages.Client
         {
             DialogResult = false;
             Close();
-        }
-
-        private string GetPhoneNumberWithoutMask(string phoneNumber)
-        {
-            return new string(phoneNumber.Where(char.IsDigit).ToArray());
         }
     }
 }

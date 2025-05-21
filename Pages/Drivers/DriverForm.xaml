@@ -1,8 +1,17 @@
 ﻿<Window x:Class="TaxiDispatcher.Pages.Drivers.DriverForm"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:s="clr-namespace:System;assembly=mscorlib"
         Title="Данные водителя" Height="300" Width="400"
         WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style TargetType="{x:Type xctk:MaskedTextBox}">
+            <Setter Property="CharacterCasing" Value="Upper"/>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -17,20 +26,30 @@
             <TextBox x:Name="LastNameBox" Grid.Row="3" Margin="0,0,0,10"/>
 
             <TextBlock Text="Телефон:" Grid.Row="4"/>
-            <TextBox x:Name="PhoneBox" Grid.Row="5" Margin="0,0,0,10" 
-                 PreviewTextInput="PhoneBox_PreviewTextInput"/>
+            <xctk:MaskedTextBox
+                x:Name="PhoneBox"
+                Mask="+7 (000) 000-00-00"
+                PromptChar=" "
+                ValueDataType="{x:Type s:String}"
+                Margin="0,0,0,10"/>
 
             <TextBlock Text="Номер водительского удостоверения:" Grid.Row="6"/>
             <TextBox x:Name="LicenseBox" Grid.Row="7" Margin="0,0,0,10"/>
 
-            <StackPanel Grid.Row="9" Orientation="Horizontal">
-                <StackPanel Grid.Row="9" Margin="0,0,10,10" Orientation="Vertical">
-                    <TextBlock Text="Модель автомобиля:" Grid.Row="8"/>
+            <StackPanel Grid.Row="9" Orientation="Horizontal" Margin="0,0,0,10">
+                <StackPanel Grid.Row="9" Margin="0,0,10,0" Orientation="Vertical">
+                    <TextBlock Text="Модель автомобиля:"/>
                     <TextBox x:Name="CarModelBox" Width="200"/>
                 </StackPanel>
-                <StackPanel Grid.Row="9" Margin="0,0,0,10" Orientation="Vertical">
-                    <TextBlock Text="Номер автомобиля:" Grid.Row="8"/>
-                    <TextBox x:Name="CarNumberBox" Width="120"/>
+                <StackPanel Grid.Row="9" Orientation="Vertical">
+                    <TextBlock Text="Номер автомобиля:"/>
+                    <xctk:MaskedTextBox 
+                        x:Name="CarNumberBox"
+                        Mask="L000LL000"
+                        Watermark="А999БВ77"
+                        PromptChar=" "
+                        ValueDataType="{x:Type s:String}"
+                        Width="120"/>
                 </StackPanel>
             </StackPanel>
         </StackPanel>

@@ -18,6 +18,7 @@ namespace TaxiDispatcher.Pages.Drivers
 
         private readonly bool isEditMode;
         private readonly int driverId;
+        private readonly PhoneNumberConverter phoneNumberConverter = new PhoneNumberConverter();
 
         // Конструктор для добавления нового водителя
         public DriverForm()
@@ -62,7 +63,6 @@ namespace TaxiDispatcher.Pages.Drivers
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            // Валидация данных
             if (string.IsNullOrWhiteSpace(FirstNameBox.Text) ||
                 string.IsNullOrWhiteSpace(LastNameBox.Text) ||
                 string.IsNullOrWhiteSpace(PhoneBox.Text) ||
@@ -74,9 +74,17 @@ namespace TaxiDispatcher.Pages.Drivers
                 return;
             }
 
-            if (!Regex.IsMatch(PhoneBox.Text, @"^[\d\+\-\(\)\s]{6,}$"))
+            string phoneWithoutMask = (string)phoneNumberConverter.ConvertBack(PhoneBox.Text);
+
+            if (phoneWithoutMask.Length < 11)
             {
-                MessageBox.Show("Некорректный формат телефона");
+                MessageBox.Show("Телефон должен состоять из 11 цифр");
+                return;
+            }
+
+            if (CarNumberBox.Text.Trim().Length < 8)
+            {
+                MessageBox.Show("Номер автомобиля должен содержать минимум 8 символов");
                 return;
             }
 
@@ -84,7 +92,7 @@ namespace TaxiDispatcher.Pages.Drivers
             {
                 FirstName = FirstNameBox.Text;
                 LastName = LastNameBox.Text;
-                Phone = PhoneBox.Text;
+                Phone = phoneWithoutMask;
                 LicenseNumber = LicenseBox.Text;
                 CarModel = CarModelBox.Text;
                 CarNumber = CarNumberBox.Text;
@@ -152,15 +160,6 @@ namespace TaxiDispatcher.Pages.Drivers
         {
             DialogResult = false;
             Close();
-        }
-
-        private void PhoneBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            // Разрешаем только цифры, +, -, пробел и скобки
-            if (!Regex.IsMatch(e.Text, @"^[\d\+\-\(\)\s]+$"))
-            {
-                e.Handled = true;
-            }
         }
     }
 }
