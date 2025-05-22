@@ -20,7 +20,7 @@ namespace TaxiDispatcher.Pages.Drivers
         {
             string query = "SELECT DriverID, CONCAT(FirstName, ' ', LastName) as FullName, " +
                           "Phone, CONCAT(CarModel, ' (', CarNumber, ')') as CarInfo, " +
-                          "Status, Rating FROM Drivers";
+                          "Status FROM Drivers";
             DriversGrid.ItemsSource = db.ExecuteQuery(query).DefaultView;
         }
 

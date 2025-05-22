@@ -84,7 +84,6 @@ namespace TaxiDispatcher.Pages.Reports
                     COUNT(o.OrderID) as 'Кол-во заказов',
                     SUM(o.Price) as 'Общий доход',
                     AVG(o.Price) as 'Средний заказ',
-                    d.Rating as 'Рейтинг'
                 FROM Drivers d
                 LEFT JOIN Orders o ON d.DriverID = o.DriverID 
                     AND o.OrderTime BETWEEN @startDate AND @endDate

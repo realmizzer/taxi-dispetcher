@@ -23,8 +23,7 @@ namespace TaxiDispatcher.Pages.Client
                 string query = @"SELECT ClientID, 
                                CONCAT(FirstName, ' ', LastName) as FullName, 
                                Phone, 
-                               DATE_FORMAT(RegistrationDate, '%d.%m.%Y %H:%i') as RegistrationDate, 
-                               LoyaltyPoints 
+                               DATE_FORMAT(RegistrationDate, '%d.%m.%Y %H:%i') as RegistrationDate 
                                FROM Clients
                                ORDER BY RegistrationDate DESC";
 
@@ -88,8 +87,7 @@ namespace TaxiDispatcher.Pages.Client
                 string query = @"SELECT ClientID, 
                                CONCAT(FirstName, ' ', LastName) as FullName, 
                                Phone, 
-                               DATE_FORMAT(RegistrationDate, '%d.%m.%Y %H:%i') as RegistrationDate, 
-                               LoyaltyPoints 
+                               DATE_FORMAT(RegistrationDate, '%d.%m.%Y %H:%i') as RegistrationDate,
                                FROM Clients
                                WHERE FirstName LIKE @search 
                                OR LastName LIKE @search 

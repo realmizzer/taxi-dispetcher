@@ -10,7 +10,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0">
-            <TextBlock Text="Клиент:" Grid.Row="0"/>
+            <TextBlock Text="Клиент:"/>
             <ComboBox x:Name="ClientComboBox" DisplayMemberPath="FullName" 
                  SelectedValuePath="ClientID" Margin="0,0,0,10"/>
 
@@ -23,6 +23,9 @@
 
             <TextBlock Text="Адрес назначения:"/>
             <TextBox x:Name="DestinationTextBox" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Стоимость:"/>
+            <TextBox x:Name="PriceTextBox" Margin="0,0,0,10"/>
 
             <TextBlock Text="Способ оплаты:"/>
             <ComboBox x:Name="PaymentMethodComboBox" SelectedValuePath="Tag" Margin="0,0,0,10">
