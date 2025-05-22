@@ -30,7 +30,6 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Дата регистрации" Binding="{Binding RegistrationDate}" Width="150"/>
-                <DataGridTextColumn Header="Баллы" Binding="{Binding LoyaltyPoints}" Width="80"/>
                 <DataGridTemplateColumn Width="Auto">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

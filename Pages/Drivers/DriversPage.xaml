@@ -38,7 +38,6 @@
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Авто" Binding="{Binding CarInfo}" Width="*"/>
                 <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
-                <DataGridTextColumn Header="Рейтинг" Binding="{Binding Rating}" Width="80"/>
                 <DataGridTemplateColumn Width="Auto">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
