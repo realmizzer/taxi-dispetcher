@@ -3,6 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Height="400" Width="600">
     <Grid>
-        <DataGrid x:Name="HistoryDataGrid" AutoGenerateColumns="True"/>
+        <DataGrid x:Name="HistoryDataGrid" AutoGenerateColumns="True" IsReadOnly="True"/>
     </Grid>
 </Window>

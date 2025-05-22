@@ -20,7 +20,7 @@
             <Button Content="Поиск" Click="SearchClients_Click" Margin="5"/>
         </StackPanel>
 
-        <DataGrid x:Name="ClientsGrid" Grid.Row="1" AutoGenerateColumns="False">
+        <DataGrid x:Name="ClientsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding ClientID}" Width="Auto"/>
                 <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}" Width="*"/>

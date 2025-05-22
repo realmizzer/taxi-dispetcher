@@ -22,7 +22,7 @@
             <ComboBoxItem Content="Финансовый отчет"/>
         </ComboBox>
 
-        <DataGrid x:Name="ReportDataGrid" Grid.Row="2" AutoGenerateColumns="True"/>
+        <DataGrid x:Name="ReportDataGrid" Grid.Row="2" AutoGenerateColumns="True" IsReadOnly="True"/>
 
         <Button Content="Экспорт в PDF" Click="ExportToPdf_Click" Grid.Row="3" 
                 HorizontalAlignment="Right" Margin="5" Width="120"/>
