@@ -21,17 +21,18 @@ namespace TaxiDispatcher.Pages.Orders
             try
             {
                 string query = @"SELECT o.OrderID, 
-                               CONCAT(c.FirstName, ' ', c.LastName) as ClientName,
-                               IFNULL(CONCAT(d.FirstName, ' ', d.LastName), 'Не назначен') as DriverName,
-                               o.PickupAddress, 
-                               o.DestinationAddress,
-                               o.Status,
-                               o.Price,
-                               DATE_FORMAT(o.OrderTime, '%d.%m.%Y %H:%i') as OrderTime
-                               FROM Orders o
-                               JOIN Clients c ON o.ClientID = c.ClientID
-                               LEFT JOIN Drivers d ON o.DriverID = d.DriverID
-                               ORDER BY o.OrderTime DESC";
+                       CONCAT(c.FirstName, ' ', c.LastName) as ClientName,
+                       IFNULL(CONCAT(d.FirstName, ' ', d.LastName), 'Не назначен') as DriverName,
+                       o.PickupAddress, 
+                       o.DestinationAddress,
+                       o.Status,
+                       o.Price,
+                       DATE_FORMAT(o.OrderTime, '%d.%m.%Y %H:%i') as OrderTime,
+                       o.Status as StatusForVisibility
+                       FROM Orders o
+                       JOIN Clients c ON o.ClientID = c.ClientID
+                       LEFT JOIN Drivers d ON o.DriverID = d.DriverID
+                       ORDER BY o.OrderTime DESC";
 
                 OrdersGrid.ItemsSource = db.ExecuteQuery(query).DefaultView;
             }
@@ -52,15 +53,10 @@ namespace TaxiDispatcher.Pages.Orders
 
         private void EditOrder_Click(object sender, RoutedEventArgs e)
         {
-            if (OrdersGrid.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите заказ");
-                return;
-            }
+            var button = sender as Button;
+            if (button == null) return;
 
-            DataRowView row = (DataRowView)OrdersGrid.SelectedItem;
-            int orderId = Convert.ToInt32(row["OrderID"]);
-
+            int orderId = (int)button.Tag;
             var form = new OrderForm(orderId);
             if (form.ShowDialog() == true)
             {
