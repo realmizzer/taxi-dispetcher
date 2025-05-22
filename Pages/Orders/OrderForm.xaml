@@ -36,10 +36,6 @@
 
             <TextBlock Text="Статус:"/>
             <ComboBox x:Name="StatusComboBox" SelectedValuePath="Tag" Margin="0,0,0,20">
-                <ComboBoxItem Tag="Pending" Content="Обработка" IsSelected="True"/>
-                <ComboBoxItem Tag="InProgress" Content="В процессе"/>
-                <ComboBoxItem Tag="Completed" Content="Завершён"/>
-                <ComboBoxItem Tag="Cancelled" Content="Отменён"/>
             </ComboBox>
         </StackPanel>
 

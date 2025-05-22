@@ -20,6 +20,7 @@ namespace TaxiDispatcher.Pages.Orders
             InitializeComponent();
             LoadClients();
             LoadDrivers();
+            InitializeStatusComboBox(false);
         }
 
         public OrderForm(int id) : this()
@@ -27,7 +28,24 @@ namespace TaxiDispatcher.Pages.Orders
             isEditMode = true;
             orderId = id;
             Title = "Редактирование заказа";
+            InitializeStatusComboBox(true);
             LoadOrderData();
+        }
+
+        private void InitializeStatusComboBox(bool isEditMode)
+        {
+            StatusComboBox.Items.Clear();
+
+            StatusComboBox.Items.Add(new ComboBoxItem { Tag = "Pending", Content = "Обработка" });
+            StatusComboBox.Items.Add(new ComboBoxItem { Tag = "InProgress", Content = "В процессе" });
+
+            if (isEditMode)
+            {
+                StatusComboBox.Items.Add(new ComboBoxItem { Tag = "Completed", Content = "Завершён" });
+                StatusComboBox.Items.Add(new ComboBoxItem { Tag = "Cancelled", Content = "Отменён" });
+            }
+
+            StatusComboBox.SelectedIndex = 0;
         }
 
         private void LoadClients()
@@ -126,9 +144,10 @@ namespace TaxiDispatcher.Pages.Orders
                 // Загрузка статуса
                 if (row["Status"] != DBNull.Value)
                 {
+                    string status = row["Status"].ToString();
                     foreach (ComboBoxItem item in StatusComboBox.Items)
                     {
-                        if (item.Tag.ToString() == row["Status"].ToString())
+                        if (item.Tag.ToString() == status)
                         {
                             StatusComboBox.SelectedItem = item;
                             break;
