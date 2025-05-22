@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using TaxiDispatcher.Utils;
 
 namespace TaxiDispatcher.Pages.Orders
@@ -150,6 +151,7 @@ namespace TaxiDispatcher.Pages.Orders
                         if (item.Tag.ToString() == status)
                         {
                             StatusComboBox.SelectedItem = item;
+                            UpdateDriverComboBoxLock(status);
                             break;
                         }
                     }
@@ -178,6 +180,13 @@ namespace TaxiDispatcher.Pages.Orders
                 int? newDriverId = DriverComboBox.SelectedValue != null ?
                     Convert.ToInt32(DriverComboBox.SelectedValue) : (int?)null;
 
+                // Если статус InProgress, используем текущего водителя
+                if (isEditMode && StatusComboBox.SelectedItem is ComboBoxItem selectedStatus &&
+                    selectedStatus.Tag.ToString() == "InProgress")
+                {
+                    newDriverId = currentDriverId;
+                }
+
                 string paymentMethod = (PaymentMethodComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
                 string status = (StatusComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
 
@@ -187,58 +196,55 @@ namespace TaxiDispatcher.Pages.Orders
                 if (isEditMode)
                 {
                     query = @"UPDATE Orders SET 
-                            ClientID = @clientId,
-                            DriverID = @driverId,
-                            PickupAddress = @pickup,
-                            DestinationAddress = @destination,
-                            PaymentMethod = @paymentMethod,
-                            Status = @status,
-                            Price = @price
-                            WHERE OrderID = @orderId";
+                        ClientID = @clientId,
+                        DriverID = @driverId,
+                        PickupAddress = @pickup,
+                        DestinationAddress = @destination,
+                        PaymentMethod = @paymentMethod,
+                        Status = @status,
+                        Price = @price
+                        WHERE OrderID = @orderId";
 
                     parameters = new MySqlParameter[]
                     {
-                        new MySqlParameter("@clientId", clientId),
-                        new MySqlParameter("@driverId", newDriverId ?? (object)DBNull.Value),
-                        new MySqlParameter("@pickup", PickupTextBox.Text),
-                        new MySqlParameter("@destination", DestinationTextBox.Text),
-                        new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
-                        new MySqlParameter("@status", status ?? (object)DBNull.Value),
-                        new MySqlParameter("@orderId", orderId),
-                        new MySqlParameter("@price", PriceTextBox.Text)
+                    new MySqlParameter("@clientId", clientId),
+                    new MySqlParameter("@driverId", newDriverId ?? (object)DBNull.Value),
+                    new MySqlParameter("@pickup", PickupTextBox.Text),
+                    new MySqlParameter("@destination", DestinationTextBox.Text),
+                    new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
+                    new MySqlParameter("@status", status ?? (object)DBNull.Value),
+                    new MySqlParameter("@orderId", orderId),
+                    new MySqlParameter("@price", PriceTextBox.Text)
                     };
 
-                    // Обновляем статусы водителей
                     if (currentDriverId.HasValue && currentDriverId != newDriverId)
                     {
-                        // Освобождаем предыдущего водителя
                         db.ExecuteNonQuery(
                             "UPDATE Drivers SET Status = 'Available' WHERE DriverID = @driverId",
-                            new[] { new MySqlParameter("@driverId", currentDriverId.Value) } );
+                            new[] { new MySqlParameter("@driverId", currentDriverId.Value) });
                     }
                 }
                 else
                 {
                     query = @"INSERT INTO Orders 
-                            (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status, Price) 
-                            VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status, @price)";
+                        (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status, Price) 
+                        VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status, @price)";
 
                     parameters = new MySqlParameter[]
                     {
-                        new MySqlParameter("@clientId", clientId),
-                        new MySqlParameter("@driverId", newDriverId ?? (object)DBNull.Value),
-                        new MySqlParameter("@pickup", PickupTextBox.Text),
-                        new MySqlParameter("@destination", DestinationTextBox.Text),
-                        new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
-                        new MySqlParameter("@status", status ?? (object)DBNull.Value),
-                        new MySqlParameter("@price", PriceTextBox.Text)
+                    new MySqlParameter("@clientId", clientId),
+                    new MySqlParameter("@driverId", newDriverId ?? (object)DBNull.Value),
+                    new MySqlParameter("@pickup", PickupTextBox.Text),
+                    new MySqlParameter("@destination", DestinationTextBox.Text),
+                    new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
+                    new MySqlParameter("@status", status ?? (object)DBNull.Value),
+                    new MySqlParameter("@price", PriceTextBox.Text)
                     };
                 }
 
                 int affectedRows = db.ExecuteNonQuery(query, parameters);
                 if (affectedRows > 0)
                 {
-                    // Обновляем статус нового водителя
                     if (newDriverId.HasValue)
                     {
                         string driverStatus = status == "Completed" || status == "Cancelled"
@@ -249,8 +255,8 @@ namespace TaxiDispatcher.Pages.Orders
                             "UPDATE Drivers SET Status = @status WHERE DriverID = @driverId",
                             new[]
                             {
-                                new MySqlParameter("@status", driverStatus),
-                                new MySqlParameter("@driverId", newDriverId.Value)
+                            new MySqlParameter("@status", driverStatus),
+                            new MySqlParameter("@driverId", newDriverId.Value)
                             });
                     }
 
@@ -270,10 +276,35 @@ namespace TaxiDispatcher.Pages.Orders
             Close();
         }
 
+        private void UpdateDriverComboBoxLock(string status)
+        {
+            if (isEditMode && status == "InProgress")
+            {
+                DriverComboBox.IsEnabled = false;
+                DriverComboBox.Background = Brushes.LightGray;
+                DriverComboBox.ToolTip = "Нельзя изменить водителя для заказа в процессе выполнения";
+            }
+            else
+            {
+                DriverComboBox.IsEnabled = true;
+                DriverComboBox.Background = Brushes.White;
+                DriverComboBox.ToolTip = null;
+            }
+        }
+
         private void PriceTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             var textBox = sender as TextBox;
             e.Handled = Regex.IsMatch(e.Text, "[^0-9]+");
+        }
+
+        private void StatusComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (StatusComboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                string status = selectedItem.Tag.ToString();
+                UpdateDriverComboBoxLock(status);
+            }
         }
     }
 }
