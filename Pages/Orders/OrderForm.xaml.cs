@@ -1,7 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Data;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using TaxiDispatcher.Utils;
 
 namespace TaxiDispatcher.Pages.Orders
@@ -54,6 +56,7 @@ namespace TaxiDispatcher.Pages.Orders
                 DataRow row = dataTable.Rows[0];
                 PickupTextBox.Text = row["PickupAddress"].ToString();
                 DestinationTextBox.Text = row["DestinationAddress"].ToString();
+                PriceTextBox.Text = row["Price"].ToString();
 
                 // Загрузка клиента
                 foreach (DataRowView item in ClientComboBox.Items)
@@ -170,7 +173,8 @@ namespace TaxiDispatcher.Pages.Orders
                             PickupAddress = @pickup,
                             DestinationAddress = @destination,
                             PaymentMethod = @paymentMethod,
-                            Status = @status
+                            Status = @status,
+                            Price = @price
                             WHERE OrderID = @orderId";
 
                     parameters = new MySqlParameter[]
@@ -181,7 +185,8 @@ namespace TaxiDispatcher.Pages.Orders
                         new MySqlParameter("@destination", DestinationTextBox.Text),
                         new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
                         new MySqlParameter("@status", status ?? (object)DBNull.Value),
-                        new MySqlParameter("@orderId", orderId)
+                        new MySqlParameter("@orderId", orderId),
+                        new MySqlParameter("@price", PriceTextBox.Text)
                     };
 
                     // Обновляем статусы водителей
@@ -196,8 +201,8 @@ namespace TaxiDispatcher.Pages.Orders
                 else
                 {
                     query = @"INSERT INTO Orders 
-                            (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status) 
-                            VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status)";
+                            (ClientID, DriverID, PickupAddress, DestinationAddress, PaymentMethod, Status, Price) 
+                            VALUES (@clientId, @driverId, @pickup, @destination, @paymentMethod, @status, @price)";
 
                     parameters = new MySqlParameter[]
                     {
@@ -206,7 +211,8 @@ namespace TaxiDispatcher.Pages.Orders
                         new MySqlParameter("@pickup", PickupTextBox.Text),
                         new MySqlParameter("@destination", DestinationTextBox.Text),
                         new MySqlParameter("@paymentMethod", paymentMethod ?? (object)DBNull.Value),
-                        new MySqlParameter("@status", status ?? (object)DBNull.Value)
+                        new MySqlParameter("@status", status ?? (object)DBNull.Value),
+                        new MySqlParameter("@price", PriceTextBox.Text)
                     };
                 }
 
@@ -243,6 +249,12 @@ namespace TaxiDispatcher.Pages.Orders
         {
             DialogResult = false;
             Close();
+        }
+
+        private void PriceTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            e.Handled = Regex.IsMatch(e.Text, "[^0-9]+");
         }
     }
 }
